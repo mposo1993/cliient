@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 function App() {
   const [notes, setNotes] = useState([]);
@@ -54,47 +55,50 @@ function App() {
   };
 
   return (
-    <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px' }}>
-      <h1>Мої нотатки</h1>
-      
-      <ul style={{ padding: 0 }}>
-        {notes.map((note) => (
-          <li key={note._id} style={{ marginBottom: '10px', listStyle: 'none' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #ccc', paddingBottom: '5px' }}>
-              {editingId === note._id ? (
-                <>
-                  <input
-                    type="text"
-                    value={editText}
-                    onChange={(e) => setEditText(e.target.value)}
-                  />
-                  <button onClick={() => saveEdit(note._id)}>Зберегти</button>
-                </>
-              ) : (
-                <>
-                  <span>{note.text}</span>
-                  <div>
-                    <button onClick={() => startEdit(note)} style={{ marginLeft: '10px' }}>Редагувати</button>
-                    <button onClick={() => deleteNote(note._id)} style={{ marginLeft: '10px' }}>Видалити</button>
-                  </div>
-                </>
-              )}
-            </div>
-          </li>
-        ))}
-      </ul>
+    <>
+      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px' }}>
+        <h1>Мої нотатки</h1>
+        
+        <ul style={{ padding: 0 }}>
+          {notes.map((note) => (
+            <li key={note._id} style={{ marginBottom: '10px', listStyle: 'none' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #ccc', paddingBottom: '5px' }}>
+                {editingId === note._id ? (
+                  <>
+                    <input
+                      type="text"
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                    />
+                    <button onClick={() => saveEdit(note._id)}>Зберегти</button>
+                  </>
+                ) : (
+                  <>
+                    <span>{note.text}</span>
+                    <div>
+                      <button onClick={() => startEdit(note)} style={{ marginLeft: '10px' }}>Редагувати</button>
+                      <button onClick={() => deleteNote(note._id)} style={{ marginLeft: '10px' }}>Видалити</button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
 
-      <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-        <input
-          type="text"
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          placeholder="Нова нотатка..."
-          style={{ flex: 1, padding: '12px 15px', fontSize: '16px', boxSizing: 'border-box' }}
-        />
-        <button onClick={addNote} style={{ padding: '12px 20px', fontSize: '16px', boxSizing: 'border-box' }}>Додати</button>
+        <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+          <input
+            type="text"
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            placeholder="Нова нотатка..."
+            style={{ flex: 1, padding: '12px 15px', fontSize: '16px', boxSizing: 'border-box' }}
+          />
+          <button onClick={addNote} style={{ padding: '12px 20px', fontSize: '16px', boxSizing: 'border-box' }}>Додати</button>
+        </div>
       </div>
-    </div>
+      <SpeedInsights />
+    </>
   );
 }
 
