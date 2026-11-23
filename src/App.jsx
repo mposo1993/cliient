@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 function App() {
   const [notes, setNotes] = useState([]);
@@ -94,6 +95,7 @@ function App() {
         />
         <button onClick={addNote} style={{ padding: '12px 20px', fontSize: '16px', boxSizing: 'border-box' }}>Додати</button>
       </div>
+      <SpeedInsights />
     </div>
   );
 }
