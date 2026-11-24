@@ -1,99 +1,89 @@
 import { useState, useEffect } from 'react';
+import { getNotes, createNote, updateNote, deleteNote } from './api/notes';
+import NoteItem from './components/NoteItem';
+import './App.css';
 
 function App() {
   const [notes, setNotes] = useState([]);
   const [inputText, setInputText] = useState('');
-  const [editingId, setEditingId] = useState(null);
-  const [editText, setEditText] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch('http://localhost:3001/api/notes')
-      .then((res) => res.json())
-      .then((data) => setNotes(data));
+    const controller = new AbortController();
+    getNotes(controller.signal)
+      .then(setNotes)
+      .catch((err) => {
+        if (err.name !== 'AbortError') setError(`Не вдалося завантажити нотатки: ${err.message}`);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
   }, []);
 
-  const addNote = () => {
-    if (!inputText.trim()) return;
-
-    fetch('http://localhost:3001/api/notes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: inputText }),
-    })
-      .then((res) => res.json())
-      .then((newNote) => {
-        setNotes([...notes, newNote]);
-        setInputText('');
-      });
+  // Виконує дію, показує помилку; повертає true при успіху
+  const run = async (action, errorText) => {
+    setError('');
+    try {
+      await action();
+      return true;
+    } catch (err) {
+      setError(`${errorText}: ${err.message}`);
+      return false;
+    }
   };
 
-  const startEdit = (note) => {
-    setEditingId(note._id);
-    setEditText(note.text);
+  const addNote = (e) => {
+    e.preventDefault();
+    const text = inputText.trim();
+    if (!text) return;
+    return run(async () => {
+      const newNote = await createNote(text);
+      setNotes((prev) => [...prev, newNote]);
+      setInputText('');
+    }, 'Не вдалося додати нотатку');
   };
 
-  const saveEdit = (id) => {
-    fetch(`http://localhost:3001/api/notes/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: editText }),
-    })
-      .then((res) => res.json())
-      .then((updatedNote) => {
-        setNotes(notes.map((note) => (note._id === id ? updatedNote : note)));
-        setEditingId(null);
-      });
-  };
+  const saveNote = (id, text) =>
+    run(async () => {
+      const updated = await updateNote(id, text);
+      setNotes((prev) => prev.map((n) => (n._id === id ? updated : n)));
+    }, 'Не вдалося зберегти нотатку');
 
-  const deleteNote = (id) => {
-    fetch(`http://localhost:3001/api/notes/${id}`, {
-      method: 'DELETE',
-    }).then(() => {
-      setNotes(notes.filter((note) => note._id !== id));
-    });
-  };
+  const removeNote = (id) =>
+    run(async () => {
+      await deleteNote(id);
+      setNotes((prev) => prev.filter((n) => n._id !== id));
+    }, 'Не вдалося видалити нотатку');
 
   return (
-    <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px' }}>
+    <div className="app">
       <h1>Мої нотатки</h1>
-      
-      <ul style={{ padding: 0 }}>
-        {notes.map((note) => (
-          <li key={note._id} style={{ marginBottom: '10px', listStyle: 'none' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #ccc', paddingBottom: '5px' }}>
-              {editingId === note._id ? (
-                <>
-                  <input
-                    type="text"
-                    value={editText}
-                    onChange={(e) => setEditText(e.target.value)}
-                  />
-                  <button onClick={() => saveEdit(note._id)}>Зберегти</button>
-                </>
-              ) : (
-                <>
-                  <span>{note.text}</span>
-                  <div>
-                    <button onClick={() => startEdit(note)} style={{ marginLeft: '10px' }}>Редагувати</button>
-                    <button onClick={() => deleteNote(note._id)} style={{ marginLeft: '10px' }}>Видалити</button>
-                  </div>
-                </>
-              )}
-            </div>
-          </li>
-        ))}
-      </ul>
 
-      <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+      {error && <p className="error" role="alert">{error}</p>}
+
+      {loading ? (
+        <p>Завантаження...</p>
+      ) : notes.length === 0 ? (
+        <p>Нотаток поки немає</p>
+      ) : (
+        <ul className="notes">
+          {notes.map((note) => (
+            <NoteItem key={note._id} note={note} onSave={saveNote} onDelete={removeNote} />
+          ))}
+        </ul>
+      )}
+
+      <form className="add-form" onSubmit={addNote}>
         <input
           type="text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           placeholder="Нова нотатка..."
-          style={{ flex: 1, padding: '12px 15px', fontSize: '16px', boxSizing: 'border-box' }}
         />
-        <button onClick={addNote} style={{ padding: '12px 20px', fontSize: '16px', boxSizing: 'border-box' }}>Додати</button>
-      </div>
+        <button type="submit">Додати</button>
+      </form>
     </div>
   );
 }
