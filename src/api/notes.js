@@ -1,4 +1,4 @@
-const BASE = `${import.meta.env.VITE_API_URL ?? 'http://localhost:3001'}/api/notes`;
+const BASE = `${import.meta.env.VITE_API_URL ?? 'https://test-nonatki-server.onrender.com'}/api/notes`;
 
 async function request(url = BASE, options = {}) {
   const res = await fetch(url, {
