@@ -41,16 +41,17 @@
   margin-top: 20px;
 }
 
-.add-form input {
-  flex: 1;
-  padding: 12px 15px;
-  font-size: 16px;
+.app button,
+.app input {
+  font: inherit;
+  font-size: 15px;
+  padding: 8px 14px;
   box-sizing: border-box;
 }
 
-.add-form button {
-  padding: 12px 20px;
-  font-size: 16px;
+.add-form input {
+  flex: 1;
+  min-width: 0;
 }
 
 .error {
