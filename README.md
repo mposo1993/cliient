@@ -10,7 +10,7 @@ cp .env.example .env   # за потреби змініть VITE_API_URL
 npm run dev
 ```
 
-Бекенд має працювати на `VITE_API_URL` (за замовчуванням `http://localhost:3001`).
+Бекенд має працювати на `VITE_API_URL` (за замовчуванням `https://test-nonatki-server.onrender.com`).
 
 ## Скрипти
 
